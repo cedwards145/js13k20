@@ -61,5 +61,5 @@ typings/
 .next
 
 # Built JS files
-dist/*.js
+dist/*
 build/*

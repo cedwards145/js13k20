@@ -11,5 +11,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Cameron Edwards",
-  "license": ""
+  "license": "",
+  "devDependencies": {
+    "html-webpack-plugin": "^4.3.0",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
+  }
 }
