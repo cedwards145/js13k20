@@ -13,6 +13,7 @@
   "author": "Cameron Edwards",
   "license": "",
   "devDependencies": {
+    "copy-webpack-plugin": "^6.0.3",
     "html-webpack-plugin": "^4.3.0",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
