@@ -1,5 +1,5 @@
 const { Game } = require("./game");
-const { keyDown, keyUp } = require("./input");
+const { keyDown, keyUp, clearPressedKeys } = require("./input");
 
 const canvas = document.getElementById("game");
 const tileset = new Image();
@@ -14,6 +14,8 @@ function start() {
         game.draw();
 
         window.requestAnimationFrame(run);
+
+        clearPressedKeys();
     }
     run();
 }

@@ -1,43 +1,146 @@
-import { isKeyDown } from "./input";
+import { isKeyDown, isKeyPressed } from "./input";
 import { TileMap } from "./map";
 import testmap from "./testmap.json";
+import { Character } from "./character";
+import { Player } from "./player";
+import { Conversation } from "./conversation";
+
+const INTERACT_DISTANCE = 16;
 
 class Game {
     constructor(canvas, tileset) {
         this.canvas = canvas;
         this.context = canvas.getContext("2d");
+        
+        this.scalingFactor = 3;
+        
+        this.context.imageSmoothingEnabled = false;
         this.tileset = tileset;
 
-        this.map = new TileMap(testmap, tileset);
+        this.map = new TileMap(testmap);
+        this.characters = [];
 
-        this.player = {
-            x: 50,
-            y: 128,
-            width: 32,
-            height: 32
-        };
+        this.player = new Player(32, 88);
+        
+        this.characters.push(this.player);
+        this.characters.push(new Character(150, 88, 1, new Conversation(this, [
+            "Thog:\nMe Thog, who you?",
+            "Player:\nI'm the player, I'm a detective",
+            "Thog\nDetective? Thog no know that word",
+            "Player:\n..."
+        ])));
+
+        this.characters.push(new Character(200, 88, 2, "Message 2"));
+        this.characters.push(new Character(250, 88, 3, "Message 3"));
+        this.characters.push(new Character(300, 88, 4, "Message 4"));
+
+        this.menu = null;
+    }
+
+    canvasWidth() {
+        return this.canvas.width / this.scalingFactor;
+    }
+
+    canvasHeight() {
+        return this.canvas.height / this.scalingFactor;
+    }
+
+    clearMenu() {
+        this.menu = null;
     }
 
     update() {
         this.map.update();
 
-        if (isKeyDown(65)) {
-            this.player.x -= 2;
+        if (this.menu) {
+            this.menu.update();
         }
-        
-        if (isKeyDown(68)) {
-            this.player.x += 2;
+        else {
+            for (let index = 0; index < this.characters.length; index++) {
+                const character = this.characters[index];
+                character.update();
+            }
+
+            if (isKeyPressed(69)) {
+                const closestCharacter = this.getClosestCharacterToPlayer();
+                const distance = Math.abs(closestCharacter.x - this.player.x);
+    
+                if (distance <= INTERACT_DISTANCE) {
+                    this.menu = closestCharacter.openingConversation;
+                }
+            }
         }
     }
 
     draw() {
+        this.context.scale(this.scalingFactor, this.scalingFactor);
+        
         this.context.fillStyle = "rgb(100, 149, 237)";
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.map.draw(this.context);
+        this.map.draw(this.context, this.tileset);
+        
+        for (let index = 0; index < this.characters.length; index++) {
+            const character = this.characters[index];
+            character.draw(this.context, this.tileset);
+        }
 
-        this.context.fillStyle = "rgb(255, 255, 255)";
-        this.context.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+        this.drawPrompt();
+
+        if (this.menu) {
+            this.menu.draw(this.context);
+        }
+
+        this.context.resetTransform();
+    }
+
+    drawPrompt() {
+        const closestCharacter = this.getClosestCharacterToPlayer();
+        const distance = Math.abs(closestCharacter.x - this.player.x);
+
+        if (distance <= INTERACT_DISTANCE) {
+            const interactX = closestCharacter.x + (closestCharacter.width / 2);
+            const interactY = closestCharacter.y - 10;
+    
+            this.context.fillStyle = "rgb(0, 0, 0)";
+            this.context.beginPath();
+            this.context.moveTo(interactX - 4, interactY - 4);
+            this.context.lineTo(interactX + 4, interactY - 4);
+            this.context.lineTo(interactX + 4, interactY + 4);
+            this.context.lineTo(interactX + 2, interactY + 4);
+            this.context.lineTo(interactX, interactY + 6);
+            this.context.lineTo(interactX - 2, interactY + 4);
+            this.context.lineTo(interactX - 4, interactY + 4);
+            this.context.fill();
+    
+            this.context.fillStyle = "rgb(255, 255, 255)";
+            this.context.font = "8px sans";
+            this.context.textAlign = "center";
+            this.context.fillText("!", interactX, interactY + 3);
+        }        
+    }
+
+    getClosestCharacterToPlayer() {
+        // Can probably be replaced with an array function?
+        let closestDistance = Number.POSITIVE_INFINITY;
+        let closest = null;
+
+        for (let index = 0; index < this.characters.length; index++) {
+            const character = this.characters[index];
+            
+            if (character === this.player) {
+                continue;
+            }
+            
+            const distance = Math.abs(character.x - this.player.x);
+
+            if (distance <= closestDistance) {
+                closestDistance = distance;
+                closest = character;
+            }
+        }
+
+        return closest;
     }
 }
 
