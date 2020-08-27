@@ -5,6 +5,8 @@ class Conversation extends Menu {
     constructor(game, messages) {
         super(game);
         this.messages = messages;
+        this.onComplete = null;
+
         this.messageIndex = 0;
         this.characterIndex = 0;
 
@@ -28,6 +30,10 @@ class Conversation extends Menu {
                 if (this.messageIndex === this.messages.length) {
                     this.messageIndex = 0;
                     this.game.clearMenu();
+
+                    if (this.onComplete){ 
+                        this.onComplete();
+                    }
                 }
             }
         }

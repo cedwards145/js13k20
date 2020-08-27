@@ -1,9 +1,11 @@
 import { isKeyDown, isKeyPressed } from "./input";
 import { TileMap } from "./map";
 import testmap from "./testmap.json";
-import { Character } from "./character";
+import { Character, Thog } from "./character";
 import { Player } from "./player";
 import { Conversation } from "./conversation";
+import { Choice } from "./choice";
+import { InteractMenu } from "./interact";
 
 const INTERACT_DISTANCE = 16;
 
@@ -20,19 +22,17 @@ class Game {
         this.map = new TileMap(testmap);
         this.characters = [];
 
-        this.player = new Player(32, 88);
+        this.player = new Player(this, 32, 88);
         
         this.characters.push(this.player);
-        this.characters.push(new Character(150, 88, 1, new Conversation(this, [
-            "Thog:\nMe Thog, who you?",
-            "Player:\nI'm the player, I'm a detective",
-            "Thog\nDetective? Thog no know that word",
-            "Player:\n..."
-        ])));
+        this.characters.push(new Character(150, 88, "Thog", 1));
 
-        this.characters.push(new Character(200, 88, 2, "Message 2"));
-        this.characters.push(new Character(250, 88, 3, "Message 3"));
-        this.characters.push(new Character(300, 88, 4, "Message 4"));
+        this.characters.push(new Thog(this, 150, 88));
+        /*
+        this.characters.push(new Character(200, 88, "Knight", 2, "Message 2"));
+        this.characters.push(new Character(250, 88, "Wizard",  3, "Message 3"));
+        this.characters.push(new Character(300, 88, "Princess", 4, "Message 4"));
+        */
 
         this.menu = null;
     }
@@ -66,7 +66,12 @@ class Game {
                 const distance = Math.abs(closestCharacter.x - this.player.x);
     
                 if (distance <= INTERACT_DISTANCE) {
-                    this.menu = closestCharacter.openingConversation;
+                    const conversation = closestCharacter.getOpeningConversation();
+                    conversation.onComplete = () => {
+                        this.menu = new InteractMenu(this, closestCharacter);
+                    };
+
+                    this.menu = conversation;
                 }
             }
         }

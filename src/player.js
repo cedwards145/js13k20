@@ -2,8 +2,8 @@ import { Character } from "./character";
 import { isKeyDown } from "./input";
 
 class Player extends Character{
-    constructor(x, y) {
-        super(x, y, 0);
+    constructor(game, x, y) {
+        super(game, x, y, "Player", 0);
     }
 
     update() {
